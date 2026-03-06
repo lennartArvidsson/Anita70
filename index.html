@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anita 70 år 🎉</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Text:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --gold: #c9a227;
+        --gold-light: #e8c96a;
+        --blue: #4a6fa5;
+        --blue-deep: #2c4a7c;
+        --cream: #fdf8ee;
+        --green: #4a7c59;
+        --text: #2a1f0e;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        /* d*/
+        background: var(--cream);
+        font-family: "Crimson Text", serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ===== SPLASH SCREEN ===== */
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--cream);
+        transition: opacity 1.2s ease;
+      }
+      #splash.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #splash img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+      }
+
+      /* ===== MAIN APP ===== */
+      #app {
+        opacity: 0;
+        transition: opacity 1s ease;
+        min-height: 100vh;
+      }
+      #app.visible {
+        opacity: 1;
+      }
+
+      /* Decorative border */
+      #app::before {
+        content: "";
+        position: fixed;
+        inset: 8px;
+        border: 2px solid var(--gold);
+        pointer-events: none;
+        z-index: 10;
+        border-radius: 2px;
+      }
+
+      /* ===== HEADER ===== */
+      .header {
+        text-align: center;
+        padding: 48px 20px 24px;
+        background: linear-gradient(180deg, #f5edd8 0%, var(--cream) 100%);
+        position: relative;
+      }
+      .header::after {
+        content: "✦ ✦ ✦";
+        display: block;
+        color: var(--gold);
+        font-size: 14px;
+        letter-spacing: 8px;
+        margin-top: 12px;
+      }
+      .header h1 {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(2.4rem, 7vw, 4rem);
+        color: var(--blue-deep);
+        font-style: italic;
+        line-height: 1.1;
+      }
+      .header .subtitle {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(1rem, 3vw, 1.4rem);
+        color: var(--gold);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-top: 4px;
+      }
+
+      /* ===== SONG LIST ===== */
+      #song-list {
+        padding: 24px 20px 60px;
+        max-width: 520px;
+        margin: 0 auto;
+      }
+      .menu-label {
+        text-align: center;
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        color: var(--blue);
+        font-size: 1.15rem;
+        margin-bottom: 24px;
+        opacity: 0.8;
+      }
+
+      .song-btn {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 16px 24px;
+        margin-bottom: 14px;
+        background: white;
+        border: 1.5px solid #e0d4b0;
+        border-radius: 2px;
+        cursor: pointer;
+        font-family: "Playfair Display", serif;
+        font-size: clamp(1rem, 3.5vw, 1.2rem);
+        color: var(--text);
+        text-align: left;
+        transition: all 0.22s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        position: relative;
+        overflow: hidden;
+      }
+      .song-btn::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--gold);
+        transform: scaleY(0);
+        transition: transform 0.22s ease;
+        transform-origin: center;
+      }
+      .song-btn:hover {
+        border-color: var(--gold);
+        transform: translateX(4px);
+        box-shadow: 0 4px 16px rgba(201, 162, 39, 0.18);
+      }
+      .song-btn:hover::before {
+        transform: scaleY(1);
+      }
+      .song-btn .num {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        color: var(--gold);
+        margin-right: 16px;
+        font-size: 1rem;
+        min-width: 28px;
+      }
+      .song-btn .melody {
+        font-size: 0.8rem;
+        color: #888;
+        font-family: "Crimson Text", serif;
+        font-style: italic;
+        margin-left: auto;
+        padding-left: 12px;
+        white-space: nowrap;
+      }
+
+      /* ===== SONG PAGE ===== */
+      #song-page {
+        display: none;
+        min-height: 100vh;
+        padding: 0 0 80px;
+      }
+      #song-page.active {
+        display: block;
+      }
+
+      .song-header {
+        background: linear-gradient(
+          135deg,
+          var(--blue-deep) 0%,
+          var(--blue) 100%
+        );
+        padding: 48px 28px 32px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .song-header::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 3 L23 13 L33 13 L25 19 L28 30 L20 23 L12 30 L15 19 L7 13 L17 13Z' fill='none' stroke='rgba(255,255,255,0.05)' stroke-width='1'/%3E%3C/svg%3E")
+          repeat;
+        opacity: 0.5;
+      }
+      .song-header h2 {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(1.6rem, 6vw, 2.8rem);
+        color: white;
+        position: relative;
+        line-height: 1.2;
+      }
+      .song-header .melody-tag {
+        font-family: "Crimson Text", serif;
+        font-style: italic;
+        color: var(--gold-light);
+        font-size: 1rem;
+        margin-top: 8px;
+        position: relative;
+        letter-spacing: 0.5px;
+      }
+
+      .song-body {
+        padding: 36px 28px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .song-body p {
+        font-size: clamp(1.1rem, 3.5vw, 1.35rem);
+        line-height: 1.95;
+        color: var(--text);
+        white-space: pre-line;
+      }
+
+      /* Verse dividers */
+      .verse {
+        margin-bottom: 28px;
+        padding-bottom: 28px;
+        border-bottom: 1px solid #e8dfc8;
+      }
+      .verse:last-child {
+        border-bottom: none;
+      }
+
+      /* Back button */
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 20px 28px 0;
+        padding: 10px 20px;
+        background: transparent;
+        border: 1.5px solid var(--gold);
+        border-radius: 2px;
+        color: var(--gold);
+        font-family: "Playfair Display", serif;
+        font-size: 0.95rem;
+        cursor: pointer;
+        letter-spacing: 1px;
+        transition: all 0.2s ease;
+      }
+      .back-btn:hover {
+        background: var(--gold);
+        color: white;
+      }
+
+      /* Decorative flowers */
+      .flower-divider {
+        text-align: center;
+        color: var(--gold);
+        font-size: 1.2rem;
+        letter-spacing: 6px;
+        padding: 16px 0 0;
+      }
+
+      /* Footer */
+      .footer {
+        text-align: center;
+        padding: 20px;
+        color: #b0a080;
+        font-style: italic;
+        font-size: 0.85rem;
+      }
+
+      /* Animations */
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .song-btn {
+        animation: fadeUp 0.4s ease both;
+      }
+      .song-btn:nth-child(1) {
+        animation-delay: 0.05s;
+      }
+      .song-btn:nth-child(2) {
+        animation-delay: 0.12s;
+      }
+      .song-btn:nth-child(3) {
+        animation-delay: 0.19s;
+      }
+      .song-btn:nth-child(4) {
+        animation-delay: 0.26s;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- SPLASH -->
+    <div id="splash">
+      <img src="startbild.jpg" alt="Anita 70 år" />
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app">
+      <!-- SONG LIST VIEW -->
+      <div id="song-list-view">
+        <div class="header">
+          <div class="subtitle">Sångbok</div>
+          <h1>Anita 70 år</h1>
+        </div>
+
+        <div id="song-list">
+          <p class="menu-label">— Välj en sång att sjunga —</p>
+          <!-- Songs injected by JS -->
+        </div>
+
+        <div class="footer">Med kärlek från alla som är här ♡</div>
+      </div>
+
+      <!-- SONG PAGE VIEW -->
+      <div id="song-page">
+        <button class="back-btn" onclick="showList()">← Tillbaka</button>
+        <div class="song-header">
+          <h2 id="song-title"></h2>
+          <div class="melody-tag" id="song-melody"></div>
+        </div>
+        <div class="song-body" id="song-content"></div>
+        <div class="flower-divider">✿ ✿ ✿</div>
+        <div class="footer">Sjung ut! 🎵</div>
+      </div>
+    </div>
+
+    <script>
+      const songs = [
+        {
+          title: "GO FESTEN IN",
+          melody: "Melodi: When the Saints…",
+          verses: [
+            `Go festen in, go festen in
+Go festen in och trivs med oss
+And very welcome everyhopa
+So we can sing go festen in`,
+            `Go festen in, go festen in
+Go festen in all släkt and friends
+We are so glad att we can see you
+Att we can sing go festen in`,
+            `To tjejs and boys, it's very skojs
+We like to see so many strongs
+We känning oss so very happy
+We singing welcome in our songs`,
+            `To all of you, it´s riktigt true
+Välkomna hit med all your voice
+And sing så att ni keep on sjunga
+När ni tonighting go to kojs`,
+            `Go festen in, go festen in
+We singing all go festen in
+We klappa takt med våra handsings
+När vi nu sings go festen in!`,
+          ],
+        },
+        {
+          title: "JU MER VI ÄR TILLSAMMANS",
+          melody: "Melodi: Ju mer vi är tillsammans",
+          verses: [
+            `Ju mer vi e' tillsammans
+tillsammans, tillsammans
+Ju mer vi är tillsammans
+ju gladare vi blir
+
+För mina vänner är Dina vänner
+och Dina vänner är mina vänner
+Hej
+Ju mer vi e' tillsammans
+ju gladare vi bli`,
+          ],
+        },
+        {
+          title: "VAR NÖJD MED ALLT VAD LIVET GER",
+          melody: "Melodi: Gluntarne",
+          verses: [
+            `Var nöjd med, allt vad livet ger
+och allting som du kring dig ser,
+glöm bort bekymmer, sorger och besvär!
+
+Var glad och nöjd, för vet du vad,
+en björntjänst gör ju ingen glad,
+var nöjd med livet som vi lever här!`,
+          ],
+        },
+        {
+          title: "DET ÄR VÅREN",
+          melody: "Melodi: Det är våren",
+          verses: [
+            `Ja, det är våren, ja, det är våren,
+som har kommit igen
+och med den kärleken.
+
+Ja, det är våren, ja, det är våren,
+som har kommit tillbaka igen.
+
+När vi varann i portarna krama
+och katterna på gårdarna jama
+Då är det våren
+som har kommit tillbaka igen.`,
+          ],
+        },
+      ];
+
+      // Build song list
+      const listEl = document.getElementById("song-list");
+      // Keep the label, then add buttons
+      const label = listEl.querySelector(".menu-label");
+      songs.forEach((s, i) => {
+        const btn = document.createElement("button");
+        btn.className = "song-btn";
+        btn.innerHTML = `<span class="num">${i + 1}.</span>${s.title}<span class="melody">${s.melody.replace("Melodi: ", "")}</span>`;
+        btn.onclick = () => showSong(i);
+        listEl.appendChild(btn);
+      });
+
+      function showSong(idx) {
+        const s = songs[idx];
+        document.getElementById("song-title").textContent = s.title;
+        document.getElementById("song-melody").textContent = s.melody;
+
+        const content = document.getElementById("song-content");
+        content.innerHTML = s.verses
+          .map((v) => `<div class="verse"><p>${v}</p></div>`)
+          .join("");
+
+        document.getElementById("song-list-view").style.display = "none";
+        const page = document.getElementById("song-page");
+        page.classList.add("active");
+        window.scrollTo(0, 0);
+      }
+
+      function showList() {
+        document.getElementById("song-page").classList.remove("active");
+        document.getElementById("song-list-view").style.display = "block";
+        window.scrollTo(0, 0);
+      }
+
+      // Splash → fade out after 2.8s, then reveal app
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          const splash = document.getElementById("splash");
+          const app = document.getElementById("app");
+          splash.classList.add("fade-out");
+          app.classList.add("visible");
+          setTimeout(() => (splash.style.display = "none"), 1300);
+        }, 2800);
+      });
+    </script>
+  </body>
+</html>
