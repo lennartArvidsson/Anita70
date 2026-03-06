@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Anita 70 år 🎉</title>
+    <title>Anita -70 år 🎉</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Text:ital@0;1&display=swap"
       rel="stylesheet"
@@ -26,7 +26,6 @@
       }
 
       body {
-        /* d*/
         background: var(--cream);
         font-family: "Crimson Text", serif;
         min-height: 100vh;
@@ -353,97 +352,116 @@
     </div>
 
     <script>
-      const songs = [
-        {
-          title: "GO FESTEN IN",
-          melody: "Melodi: When the Saints…",
-          verses: [
-            `Go festen in, go festen in
-Go festen in och trivs med oss
-And very welcome everyhopa
-So we can sing go festen in`,
-            `Go festen in, go festen in
-Go festen in all släkt and friends
-We are so glad att we can see you
-Att we can sing go festen in`,
-            `To tjejs and boys, it's very skojs
-We like to see so many strongs
-We känning oss so very happy
-We singing welcome in our songs`,
-            `To all of you, it´s riktigt true
-Välkomna hit med all your voice
-And sing så att ni keep on sjunga
-När ni tonighting go to kojs`,
-            `Go festen in, go festen in
-We singing all go festen in
-We klappa takt med våra handsings
-När vi nu sings go festen in!`,
-          ],
-        },
-        {
-          title: "JU MER VI ÄR TILLSAMMANS",
-          melody: "Melodi: Ju mer vi är tillsammans",
-          verses: [
-            `Ju mer vi e' tillsammans
-tillsammans, tillsammans
-Ju mer vi är tillsammans
-ju gladare vi blir
+      // ── Parser för songs.txt ──────────────────────────────────────────────
+      // Format per låt:
+      //   TITEL MED VERSALER
+      //   Text: artistnamn      (valfritt)
+      //   Melodi: melodinamn    (valfritt)
+      //   <blank rad(er)>
+      //   Sångtext med tomrader som versindelning
+      //
+      // Låtar separeras av en rad med enbart versaler (ny titel).
+      // ─────────────────────────────────────────────────────────────────────
+      function parseSongs(raw) {
+        const songs = [];
+        // Dela upp i "block" per låt: ny låt börjar när en rad är enbart versaler+mellanslag
+        const isTitleLine = (line) =>
+          /^[A-ZÅÄÖÉÀÜÏ0-9 '\-,!.?]+$/.test(line.trim()) &&
+          line.trim().length > 1;
 
-För mina vänner är Dina vänner
-och Dina vänner är mina vänner
-Hej
-Ju mer vi e' tillsammans
-ju gladare vi bli`,
-          ],
-        },
-        {
-          title: "VAR NÖJD MED ALLT VAD LIVET GER",
-          melody: "Melodi: Gluntarne",
-          verses: [
-            `Var nöjd med, allt vad livet ger
-och allting som du kring dig ser,
-glöm bort bekymmer, sorger och besvär!
+        const lines = raw.split("\n");
+        let current = null;
 
-Var glad och nöjd, för vet du vad,
-en björntjänst gör ju ingen glad,
-var nöjd med livet som vi lever här!`,
-          ],
-        },
-        {
-          title: "DET ÄR VÅREN",
-          melody: "Melodi: Det är våren",
-          verses: [
-            `Ja, det är våren, ja, det är våren,
-som har kommit igen
-och med den kärleken.
+        const pushCurrent = () => {
+          if (!current) return;
+          // Rensa trailing tomrader i body
+          while (
+            current._bodyLines.length &&
+            !current._bodyLines[current._bodyLines.length - 1].trim()
+          ) {
+            current._bodyLines.pop();
+          }
+          // Dela body i verser via tomrader
+          current.verses = current._bodyLines
+            .join("\n")
+            .split(/\n{2,}/)
+            .map((v) => v.trim())
+            .filter((v) => v.length > 0);
+          delete current._bodyLines;
+          songs.push(current);
+        };
 
-Ja, det är våren, ja, det är våren,
-som har kommit tillbaka igen.
+        for (const rawLine of lines) {
+          const line = rawLine.trimEnd();
 
-När vi varann i portarna krama
-och katterna på gårdarna jama
-Då är det våren
-som har kommit tillbaka igen.`,
-          ],
-        },
-      ];
+          if (
+            isTitleLine(line) &&
+            line === line.toUpperCase() &&
+            !/^(TEXT:|MELODI:)/i.test(line)
+          ) {
+            pushCurrent();
+            current = {
+              title: line.trim(),
+              text: "",
+              melody: "",
+              verses: [],
+              _bodyLines: [],
+            };
+            continue;
+          }
 
-      // Build song list
-      const listEl = document.getElementById("song-list");
-      // Keep the label, then add buttons
-      const label = listEl.querySelector(".menu-label");
-      songs.forEach((s, i) => {
-        const btn = document.createElement("button");
-        btn.className = "song-btn";
-        btn.innerHTML = `<span class="num">${i + 1}.</span>${s.title}<span class="melody">${s.melody.replace("Melodi: ", "")}</span>`;
-        btn.onclick = () => showSong(i);
-        listEl.appendChild(btn);
-      });
+          if (!current) continue;
+
+          if (/^text:/i.test(line)) {
+            current.text = line.replace(/^text:\s*/i, "").trim();
+          } else if (/^melodi:/i.test(line)) {
+            current.melody = line.replace(/^melodi:\s*/i, "").trim();
+          } else {
+            current._bodyLines.push(line);
+          }
+        }
+        pushCurrent();
+        return songs;
+      }
+
+      let songs = [];
+
+      async function loadSongs() {
+        try {
+          const res = await fetch("songs.txt");
+          if (!res.ok) throw new Error("Kunde inte ladda songs.txt");
+          const raw = await res.text();
+          songs = parseSongs(raw);
+        } catch (e) {
+          document.getElementById("song-list").innerHTML +=
+            `<p style="color:red;padding:20px">⚠️ ${e.message}</p>`;
+          return;
+        }
+        buildList();
+      }
+
+      function buildList() {
+        const listEl = document.getElementById("song-list");
+        songs.forEach((s, i) => {
+          const btn = document.createElement("button");
+          btn.className = "song-btn";
+          const melodyShort = s.melody || (s.text ? `Text: ${s.text}` : "");
+          btn.innerHTML = `<span class="num">${i + 1}.</span>${s.title}${melodyShort ? `<span class="melody">${melodyShort}</span>` : ""}`;
+          btn.onclick = () => showSong(i);
+          listEl.appendChild(btn);
+        });
+      }
 
       function showSong(idx) {
         const s = songs[idx];
         document.getElementById("song-title").textContent = s.title;
-        document.getElementById("song-melody").textContent = s.melody;
+        const meta = [
+          s.melody ? `Melodi: ${s.melody}` : "",
+          s.text ? `Text: ${s.text}` : "",
+        ]
+          .filter(Boolean)
+          .join("  ·  ");
+        document.getElementById("song-melody").textContent = meta;
 
         const content = document.getElementById("song-content");
         content.innerHTML = s.verses
@@ -464,6 +482,7 @@ som har kommit tillbaka igen.`,
 
       // Splash → fade out after 2.8s, then reveal app
       window.addEventListener("load", () => {
+        loadSongs(); // fetch + parse songs.txt, then build list
         setTimeout(() => {
           const splash = document.getElementById("splash");
           const app = document.getElementById("app");
