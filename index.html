@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Anita -70 år 🎉</title>
+    <title>Anita sjuttio år 🎉</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Text:ital@0;1&display=swap"
       rel="stylesheet"
@@ -364,24 +364,32 @@
       // ─────────────────────────────────────────────────────────────────────
       function parseSongs(raw) {
         const songs = [];
-        // Dela upp i "block" per låt: ny låt börjar när en rad är enbart versaler+mellanslag
-        const isTitleLine = (line) =>
-          /^[A-ZÅÄÖÉÀÜÏ0-9 '\-,!.?]+$/.test(line.trim()) &&
-          line.trim().length > 1;
+        const lines = raw.split(/\r?\n/); // hanterar både Windows (CRLF) och Unix (LF)
 
-        const lines = raw.split("\n");
+        // En rad är en titel om:
+        // 1. Den bara innehåller versaler, siffror och vanliga skiljetecken
+        // 2. Den INTE börjar med Text: eller Melodi:
+        // 3. Den följs av en tom rad, Melodi:, Text: eller är sista raden
+        const isTitleLine = (line, nextLine) => {
+          const t = line.trim();
+          if (t.length < 2) return false;
+          if (!/^[A-ZÅÄÖÉÀÜÏ0-9 '\-,!.?´]+$/.test(t)) return false;
+          if (/^(TEXT:|MELODI:)/i.test(t)) return false;
+          if (nextLine === undefined) return true;
+          const n = nextLine.trim();
+          return n === "" || /^(melodi:|text:)/i.test(n);
+        };
+
         let current = null;
 
         const pushCurrent = () => {
           if (!current) return;
-          // Rensa trailing tomrader i body
           while (
             current._bodyLines.length &&
             !current._bodyLines[current._bodyLines.length - 1].trim()
           ) {
             current._bodyLines.pop();
           }
-          // Dela body i verser via tomrader
           current.verses = current._bodyLines
             .join("\n")
             .split(/\n{2,}/)
@@ -391,14 +399,11 @@
           songs.push(current);
         };
 
-        for (const rawLine of lines) {
-          const line = rawLine.trimEnd();
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trimEnd();
+          const nextLine = lines[i + 1];
 
-          if (
-            isTitleLine(line) &&
-            line === line.toUpperCase() &&
-            !/^(TEXT:|MELODI:)/i.test(line)
-          ) {
+          if (isTitleLine(line, nextLine)) {
             pushCurrent();
             current = {
               title: line.trim(),
