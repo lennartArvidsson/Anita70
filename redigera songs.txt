@@ -1,0 +1,7 @@
+Flöde i vcs för redigering av sånger
+
+	Redigera songs.txt i VS Code och spara        
+	I terminalen:                                     
+  	git add songs.txt                     
+  	git commit -m "uppdatera sånger"                     
+  	git push   
