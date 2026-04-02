@@ -454,7 +454,7 @@
         songs.forEach((s, i) => {
           const btn = document.createElement("button");
           btn.className = "song-btn";
-          const melodyShort = s.melody || (s.text ? `Text: ${s.text}` : "");
+          const melodyShort = s.text ? `Text: ${s.text}` : (s.melody || "");
           btn.innerHTML = `<span class="num">${i + 1}.</span>${s.title}${melodyShort ? `<span class="melody">${melodyShort}</span>` : ""}`;
           btn.onclick = () => showSong(i);
           listEl.appendChild(btn);
@@ -498,7 +498,7 @@
           splash.classList.add("fade-out");
           app.classList.add("visible");
           setTimeout(() => (splash.style.display = "none"), 1300);
-        }, 100);
+        }, 2000);
       });
     </script>
   </body>

@@ -263,7 +263,6 @@ Och lyser på oss för kärlekens skull
 Lyser som guld, för kärlekens skull
 Lyser på oss, för kärlekens skull
 
-
 JAG TROR PÅ ÄNGLARNA 
 Melodi: Jag tror på sommaren
 Text: Ewa Tindemark och Daniel Igelberg
@@ -303,8 +302,8 @@ så kommer svaret jättefort
 
 
 NU BLOMSTRAR NINNI
-melodi: Nu grönskar det i Dalens famn
 Text: Sara Arvidsson
+melodi: Nu grönskar det i Dalens famn
 
 Barndomssomrar på Tyresö
 Med syskonbus och skratt
